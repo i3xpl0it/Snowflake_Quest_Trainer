@@ -1,7 +1,7 @@
 import { Question } from "@/types/quiz";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Lightbulb } from "lucide-react";
 
 interface QuestionCardProps {
   question: Question;
@@ -19,10 +19,13 @@ export const QuestionCard = ({
   const isCorrect = selectedAnswer === question.correctAnswer;
 
   return (
-    <Card className="p-6 border-border">
+    <Card className="glass-card rounded-2xl p-6 border-border/50 animate-in">
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Badge variant="secondary" className="text-xs">
+        <div className="space-y-3">
+          <Badge 
+            variant="secondary" 
+            className="text-xs font-medium bg-primary/10 text-primary border-0 hover:bg-primary/20"
+          >
             {question.category}
           </Badge>
           <h2 className="text-lg font-medium text-foreground leading-relaxed">
@@ -36,41 +39,44 @@ export const QuestionCard = ({
             const isCorrectOption = index === question.correctAnswer;
             const showCorrect = showFeedback && isCorrectOption;
             const showIncorrect = showFeedback && isSelected && !isCorrect;
+            const optionLetter = String.fromCharCode(65 + index);
 
             return (
               <button
                 key={index}
                 onClick={() => !showFeedback && onSelectAnswer(index)}
                 disabled={showFeedback}
-                className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${
                   showCorrect
-                    ? "border-success bg-success/5"
+                    ? "border-success bg-success/10 glow-success"
                     : showIncorrect
-                    ? "border-destructive bg-destructive/5"
+                    ? "border-destructive bg-destructive/10 glow-destructive"
                     : isSelected
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-card hover:border-muted-foreground"
+                    ? "border-primary bg-primary/10 glow-primary"
+                    : "border-border/50 bg-card hover:border-primary/50 hover:bg-primary/5"
                 } ${showFeedback ? "cursor-default" : "cursor-pointer"}`}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-4">
                   <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                    className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold transition-colors ${
                       showCorrect
-                        ? "border-success bg-success"
+                        ? "bg-success text-success-foreground"
                         : showIncorrect
-                        ? "border-destructive bg-destructive"
+                        ? "bg-destructive text-destructive-foreground"
                         : isSelected
-                        ? "border-primary bg-primary"
-                        : "border-muted-foreground"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground"
                     }`}
                   >
-                    {showCorrect && <CheckCircle2 className="w-4 h-4 text-success-foreground" />}
-                    {showIncorrect && <XCircle className="w-4 h-4 text-destructive-foreground" />}
-                    {isSelected && !showFeedback && (
-                      <div className="w-2 h-2 rounded-full bg-primary-foreground" />
+                    {showCorrect ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : showIncorrect ? (
+                      <XCircle className="w-4 h-4" />
+                    ) : (
+                      optionLetter
                     )}
                   </div>
-                  <span className="text-sm text-foreground leading-relaxed">{option}</span>
+                  <span className="text-sm text-foreground leading-relaxed pt-1">{option}</span>
                 </div>
               </button>
             );
@@ -79,21 +85,32 @@ export const QuestionCard = ({
 
         {showFeedback && (
           <div
-            className={`p-4 rounded-lg ${
-              isCorrect ? "bg-success/5 border border-success/20" : "bg-destructive/5 border border-destructive/20"
+            className={`p-4 rounded-xl ${
+              isCorrect 
+                ? "bg-success/10 border border-success/30" 
+                : "bg-destructive/10 border border-destructive/30"
             }`}
           >
-            <div className="flex items-start gap-2 mb-2">
-              {isCorrect ? (
-                <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-              ) : (
-                <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-              )}
-              <span className={`font-medium ${isCorrect ? "text-success" : "text-destructive"}`}>
-                {isCorrect ? "Correct!" : "Incorrect"}
-              </span>
+            <div className="flex items-start gap-3">
+              <div className={`p-2 rounded-lg ${isCorrect ? "bg-success/20" : "bg-destructive/20"}`}>
+                {isCorrect ? (
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-destructive" />
+                )}
+              </div>
+              <div className="space-y-1 flex-1">
+                <span className={`font-semibold text-sm ${isCorrect ? "text-success" : "text-destructive"}`}>
+                  {isCorrect ? "Correct!" : "Incorrect"}
+                </span>
+                <div className="flex items-start gap-2 mt-2">
+                  <Lightbulb className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {question.explanation}
+                  </p>
+                </div>
+              </div>
             </div>
-            <p className="text-sm text-foreground leading-relaxed pl-7">{question.explanation}</p>
           </div>
         )}
       </div>
