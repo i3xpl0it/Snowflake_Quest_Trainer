@@ -5,9 +5,9 @@ import { QuizProgress } from "@/components/QuizProgress";
 import { QuizResults } from "@/components/QuizResults";
 import { questions } from "@/data/questions";
 import { QuizState } from "@/types/quiz";
-import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Snowflake } from "lucide-react";
 
-const STORAGE_KEY = "snowflake-quiz-progress";
+const STORAGE_KEY = "snowpro-core-quiz-progress";
 
 const Index = () => {
   const [quizState, setQuizState] = useState<QuizState>(() => {
@@ -85,21 +85,37 @@ const Index = () => {
   if (quizState.showResults) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+        </div>
         <QuizResults score={score} total={questions.length} onRestart={handleRestart} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold text-foreground">
-            Snowflake Platform Associate Practice Exam
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Test your knowledge and get instant feedback with detailed explanations
-          </p>
+    <div className="min-h-screen bg-background py-8 px-4 relative">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      </div>
+      
+      <div className="max-w-3xl mx-auto space-y-8 relative">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl gradient-primary glow-primary">
+              <Snowflake className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">
+                SnowPro Core
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Practice Certification Exam
+              </p>
+            </div>
+          </div>
         </div>
 
         <QuizProgress
@@ -115,12 +131,12 @@ const Index = () => {
           showFeedback={showFeedback}
         />
 
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center justify-between pt-2">
           <Button
             variant="outline"
             onClick={handlePrevious}
             disabled={quizState.currentQuestion === 0}
-            className="gap-2"
+            className="gap-2 border-border/50 hover:bg-secondary"
           >
             <ChevronLeft className="w-4 h-4" />
             Previous
@@ -129,7 +145,7 @@ const Index = () => {
           <Button
             onClick={handleNext}
             disabled={currentAnswer === null}
-            className="gap-2"
+            className="gap-2 gradient-primary hover:opacity-90 transition-opacity border-0"
           >
             {isLastQuestion ? (
               <>
