@@ -1,661 +1,795 @@
 import { Question } from "@/types/quiz";
 
 export const questions: Question[] = [
-  // Domain 1: Interacting with Snowflake and Architecture (35% - Questions 1-18)
+  // Domain 1: Snowflake Architecture (20%)
   {
     id: 1,
-    question: "What is a key benefit of Snowflake's elastic storage capability?",
+    question: "A company is experiencing slow query performance during peak hours when multiple teams run complex analytical queries simultaneously. Which Snowflake feature should they implement to isolate workloads and prevent resource contention?",
     options: [
-      "Storage capacity is fixed and must be pre-allocated",
-      "Storage automatically scales up or down based on data volume without manual intervention",
-      "Storage is limited to structured data only",
-      "Storage requires separate purchases for each database"
+      "Enable result caching across all warehouses",
+      "Create dedicated virtual warehouses for each workload type",
+      "Increase the size of the single shared warehouse",
+      "Configure query acceleration service for all queries"
     ],
     correctAnswer: 1,
-    explanation: "Elastic storage in Snowflake automatically scales based on the amount of data stored, without requiring manual provisioning or capacity planning. You only pay for what you use, and there are no storage limits or performance degradation as data grows.",
+    explanation: "Creating dedicated virtual warehouses for different workload types (ETL, BI reporting, ad-hoc queries) provides workload isolation. Each warehouse has independent compute resources, preventing one workload from affecting another's performance.",
     category: "Architecture"
   },
   {
     id: 2,
-    question: "What are the three layers of Snowflake's architecture?",
+    question: "Which statement accurately describes how Snowflake's metadata cache operates within the cloud services layer?",
     options: [
-      "Storage, Compute, and Cloud Services",
-      "Database, Warehouse, and Query",
-      "Frontend, Backend, and Cache",
-      "Tables, Schemas, and Databases"
+      "It stores the actual row data for frequently accessed tables",
+      "It caches query results and automatically invalidates them after 24 hours",
+      "It stores object definitions, statistics, and access control information used for query compilation",
+      "It requires manual refresh commands to update cached information"
     ],
-    correctAnswer: 0,
-    explanation: "Snowflake's unique architecture consists of three layers: Storage (stores all data), Compute (virtual warehouses that process queries), and Cloud Services (coordinates activities, authentication, metadata management). This separation allows independent scaling of each layer.",
+    correctAnswer: 2,
+    explanation: "The cloud services layer maintains metadata including object definitions, table statistics, file locations, and access control information. This metadata is used during query compilation and optimization, and is automatically maintained by Snowflake without manual intervention.",
     category: "Architecture"
   },
   {
     id: 3,
-    question: "Which interface in Snowflake allows you to write and execute both SQL and Python code in an interactive notebook environment?",
+    question: "A data engineer notices that some queries return results almost instantly without consuming warehouse credits. Which Snowflake caching mechanism is responsible for this behavior?",
     options: [
-      "Snowsight Worksheets",
-      "Snowflake Notebooks",
-      "Classic Console",
-      "SnowSQL CLI"
+      "Local disk cache on the virtual warehouse nodes",
+      "Result cache in the cloud services layer",
+      "Remote disk cache in the storage layer",
+      "Materialized view automatic refresh"
     ],
     correctAnswer: 1,
-    explanation: "Snowflake Notebooks provide an interactive environment where you can combine SQL and Python code, visualize results using Streamlit, and work with data in a collaborative notebook format. This is ideal for data science and exploratory analysis workflows.",
-    category: "User Interface"
+    explanation: "The result cache in the cloud services layer stores query results for 24 hours. When an identical query is submitted and the underlying data hasn't changed, results are returned from this cache without using warehouse compute resources.",
+    category: "Performance"
   },
   {
     id: 4,
-    question: "In Snowsight, where can you find the history of all queries you have executed?",
+    question: "Which combination of Snowflake architectural components enables the separation of storage and compute?",
     options: [
-      "Query History tab",
-      "Worksheet History",
-      "Activity panel",
-      "Monitoring dashboard"
+      "Data stored in micro-partitions with independent virtual warehouses accessing shared cloud storage",
+      "Data stored in virtual warehouses with stages for backup",
+      "Schemas containing both data and compute definitions",
+      "Databases replicated across multiple warehouses"
     ],
     correctAnswer: 0,
-    explanation: "The Query History tab in Snowsight provides a complete record of all queries executed, including execution time, rows returned, warehouse used, and performance metrics. This is useful for troubleshooting and monitoring query patterns.",
-    category: "User Interface"
+    explanation: "Snowflake stores data in micro-partitions in cloud storage (S3, Azure Blob, GCS), while virtual warehouses are independent compute clusters that can access this shared storage. This separation allows scaling storage and compute independently.",
+    category: "Architecture"
   },
   {
     id: 5,
-    question: "What is the correct hierarchy of Snowflake objects from top to bottom?",
+    question: "A Snowflake account has three warehouses: WH_ETL (X-Large), WH_REPORTING (Medium), and WH_ADHOC (Small). If WH_REPORTING is running a complex query and WH_ADHOC submits a simple query, what happens?",
     options: [
-      "Schema → Database → Table → Column",
-      "Database → Schema → Table → Column",
-      "Table → Schema → Database → Column",
-      "Account → Warehouse → Database → Table"
+      "WH_ADHOC must wait until WH_REPORTING completes its query",
+      "Both queries execute independently using their own compute resources",
+      "The simple query is automatically routed to WH_REPORTING for faster execution",
+      "Snowflake automatically suspends WH_ETL to provide resources to WH_ADHOC"
     ],
     correctAnswer: 1,
-    explanation: "The Snowflake object hierarchy is: Account → Database → Schema → Table/View → Columns. Databases contain schemas, schemas contain tables and views, and tables contain columns. This hierarchical structure helps organize and secure data.",
+    explanation: "Virtual warehouses are completely independent compute clusters. Queries submitted to different warehouses execute concurrently without affecting each other. This is a key benefit of Snowflake's multi-cluster architecture.",
     category: "Architecture"
   },
   {
     id: 6,
-    question: "Which Snowflake object provides the compute resources to execute queries and DML operations?",
+    question: "What is the primary function of Snowflake's query pruning optimization?",
     options: [
-      "Database",
-      "Schema",
-      "Virtual Warehouse",
-      "Stage"
+      "To compress data files for storage efficiency",
+      "To skip scanning micro-partitions that don't contain relevant data based on metadata",
+      "To cache frequently accessed columns in memory",
+      "To automatically create indexes on frequently queried columns"
     ],
-    correctAnswer: 2,
-    explanation: "Virtual Warehouses are clusters of compute resources (CPU, memory, and temporary storage) that execute queries and perform DML operations. Warehouses are independent of storage, allowing you to scale compute separately from data storage.",
-    category: "Architecture"
+    correctAnswer: 1,
+    explanation: "Query pruning uses metadata stored for each micro-partition (min/max values, distinct counts) to skip partitions that cannot contain matching data. This significantly reduces the amount of data scanned, improving query performance.",
+    category: "Performance"
   },
   {
     id: 7,
-    question: "In Snowflake Notebooks, what does the cell execution status indicator show?",
+    question: "A company requires that certain sensitive workloads never share compute resources with other workloads, even from the same account. Which deployment option should they consider?",
     options: [
-      "Only whether the cell completed successfully",
-      "The execution order and current state (running, completed, or failed)",
-      "Only the execution time",
-      "The warehouse being used"
+      "Standard multi-cluster warehouse",
+      "Dedicated virtual warehouse with maximum cluster count",
+      "Snowflake Virtual Private Snowflake (VPS)",
+      "Enterprise edition with enhanced security"
     ],
-    correctAnswer: 1,
-    explanation: "Cell execution status in Snowflake Notebooks shows the execution order number and the current state of the cell (running, completed, failed, or pending). This helps track the flow of notebook execution and identify issues.",
-    category: "User Interface"
+    correctAnswer: 2,
+    explanation: "Virtual Private Snowflake (VPS) provides completely isolated compute and storage resources, separate from other Snowflake customers. This is designed for organizations with the strictest security and compliance requirements.",
+    category: "Architecture"
   },
   {
     id: 8,
-    question: "What is the purpose of the INFORMATION_SCHEMA in Snowflake?",
+    question: "Which statement about Snowflake micro-partitions is TRUE?",
     options: [
-      "To store user data and tables",
-      "To provide metadata about databases, tables, columns, and other objects",
-      "To backup database information",
-      "To store query results"
+      "Users must manually define partition keys when creating tables",
+      "Micro-partitions are immutable and automatically organized by Snowflake",
+      "Partition size is configurable between 16MB and 256MB",
+      "Partitions can be manually reorganized using ALTER TABLE commands"
     ],
     correctAnswer: 1,
-    explanation: "INFORMATION_SCHEMA is a system-defined schema that contains views providing metadata about objects in your account, such as databases, schemas, tables, columns, and views. It follows the SQL standard and is useful for discovering and documenting database structure.",
+    explanation: "Micro-partitions are automatically created and managed by Snowflake. They are immutable (cannot be modified in place), sized between 50-500MB compressed, and organized based on the natural ordering of data as it's loaded. No manual partitioning is required.",
     category: "Architecture"
   },
   {
     id: 9,
-    question: "Which statement about Snowflake's elastic compute is TRUE?",
+    question: "During query execution, which cache is checked FIRST before accessing remote storage?",
     options: [
-      "You must purchase compute capacity in advance for the entire year",
-      "Compute resources can be started, stopped, and resized on-demand based on workload needs",
-      "All queries share a single fixed compute resource",
-      "Compute capacity cannot be changed once allocated"
+      "Result cache in cloud services layer",
+      "Local SSD cache on warehouse nodes",
+      "Metadata cache",
+      "Materialized view cache"
     ],
-    correctAnswer: 1,
-    explanation: "Elastic compute in Snowflake means virtual warehouses can be created, resized, started, stopped, and deleted on-demand. Multiple warehouses can run simultaneously for different workloads, and you only pay for compute when warehouses are actively running.",
-    category: "Architecture"
+    correctAnswer: 0,
+    explanation: "The result cache is checked first. If an identical query was recently run and data hasn't changed, results return immediately. If not found, the warehouse checks its local SSD cache, and finally retrieves data from remote storage if needed.",
+    category: "Performance"
   },
   {
     id: 10,
-    question: "In Snowsight, what feature allows you to visualize query results as charts and graphs?",
+    question: "Which Snowflake edition feature allows you to fail over to a secondary account in a different region for disaster recovery?",
     options: [
-      "Manual export to Excel",
-      "Built-in data visualization and charting tools",
-      "External BI tool integration only",
-      "Custom Python scripts"
+      "Database replication (available in Standard edition)",
+      "Failover/Failback (requires Business Critical edition or higher)",
+      "Time Travel (available in all editions)",
+      "Zero-Copy Cloning (available in all editions)"
     ],
     correctAnswer: 1,
-    explanation: "Snowsight includes built-in visualization capabilities that allow you to create charts, graphs, and dashboards directly from query results without needing external tools. This makes data exploration and sharing insights faster and more accessible.",
-    category: "User Interface"
-  },
-  {
-    id: 11,
-    question: "What data types can be stored in a Snowflake table?",
-    options: [
-      "Only numeric and string types",
-      "Numeric, string, date/time, boolean, semi-structured (VARIANT, ARRAY, OBJECT), and binary types",
-      "Only structured data types",
-      "Only text-based formats"
-    ],
-    correctAnswer: 1,
-    explanation: "Snowflake supports a wide range of data types including numeric, string, date/time, boolean, binary, and semi-structured types (VARIANT, ARRAY, OBJECT). The VARIANT type is particularly powerful for storing JSON, XML, and other semi-structured data.",
-    category: "Data Types"
-  },
-  {
-    id: 12,
-    question: "Which feature in Snowflake Notebooks allows you to create interactive data applications?",
-    options: [
-      "SQL only mode",
-      "Streamlit visualization",
-      "Static HTML export",
-      "CSV download"
-    ],
-    correctAnswer: 1,
-    explanation: "Snowflake Notebooks support Streamlit, which allows you to create interactive data applications and visualizations directly within the notebook. This enables building dashboards and interactive tools without leaving the Snowflake environment.",
-    category: "User Interface"
-  },
-  {
-    id: 13,
-    question: "What is Python variable substitution in Snowflake Notebooks?",
-    options: [
-      "Converting Python code to SQL",
-      "Using Python variables in SQL queries within the notebook",
-      "Replacing Python with SQL",
-      "Translating variable names"
-    ],
-    correctAnswer: 1,
-    explanation: "Python variable substitution in Snowflake Notebooks allows you to use Python variables directly in SQL queries, making it easy to parameterize queries and pass data between Python and SQL code cells seamlessly.",
-    category: "User Interface"
-  },
-  {
-    id: 14,
-    question: "What is a View in Snowflake?",
-    options: [
-      "A physical copy of data stored separately",
-      "A saved query that acts as a virtual table",
-      "A type of warehouse",
-      "A backup of a table"
-    ],
-    correctAnswer: 1,
-    explanation: "A View in Snowflake is a named query that acts as a virtual table. When you query a view, Snowflake executes the underlying SQL query. Views don't store data themselves but provide a way to simplify complex queries and control data access.",
-    category: "Architecture"
-  },
-  {
-    id: 15,
-    question: "In Snowsight, what is the primary purpose of the Worksheets feature?",
-    options: [
-      "To create spreadsheets like Excel",
-      "To write, execute, and save SQL queries with support for multiple tabs",
-      "To only view data, not execute queries",
-      "To manage user permissions"
-    ],
-    correctAnswer: 1,
-    explanation: "Worksheets in Snowsight are used to write, execute, and save SQL queries. You can have multiple worksheet tabs, organize queries, share worksheets with team members, and view query results with visualization options.",
-    category: "User Interface"
-  },
-  {
-    id: 16,
-    question: "What happens to a Virtual Warehouse when it is suspended?",
-    options: [
-      "All data is deleted",
-      "It stops consuming compute credits but retains its configuration",
-      "It is permanently removed",
-      "Query history is lost"
-    ],
-    correctAnswer: 1,
-    explanation: "When you suspend a virtual warehouse, it stops consuming compute credits while retaining all its configuration settings (size, auto-suspend, auto-resume, etc.). You can resume it at any time to continue processing queries.",
-    category: "Resource Management"
-  },
-  {
-    id: 17,
-    question: "Which of the following is a benefit of Snowflake's cloud services layer?",
-    options: [
-      "It only stores data",
-      "It coordinates activities like authentication, metadata management, query optimization, and security",
-      "It only runs queries",
-      "It replaces the need for virtual warehouses"
-    ],
-    correctAnswer: 1,
-    explanation: "The cloud services layer manages critical infrastructure services including authentication, metadata management, query parsing and optimization, access control, and transaction management. It coordinates all activities across storage and compute layers.",
-    category: "Architecture"
-  },
-  {
-    id: 18,
-    question: "In Snowflake, what does 'context' refer to when working with databases and schemas?",
-    options: [
-      "The query execution plan",
-      "The current database and schema you're working in",
-      "The warehouse size",
-      "The user's role"
-    ],
-    correctAnswer: 1,
-    explanation: "Context in Snowflake refers to your current working database and schema. Setting context with USE DATABASE and USE SCHEMA commands allows you to reference tables and objects without fully qualifying them (e.g., use 'table_name' instead of 'database.schema.table_name').",
+    explanation: "Failover/Failback capabilities require Business Critical edition or higher. While database replication is available in Standard edition, the ability to automatically failover to a secondary account and then failback requires Business Critical or VPS.",
     category: "Architecture"
   },
 
-  // Domain 2: Identity and Data Access Management (15% - Questions 19-26)
+  // Domain 2: Account Access and Security (20%)
   {
-    id: 19,
-    question: "What is Role-Based Access Control (RBAC) in Snowflake?",
+    id: 11,
+    question: "A security administrator needs to ensure that a role can create objects in a specific schema but cannot access objects created by other roles in that schema. Which approach should be implemented?",
     options: [
-      "A system where access is granted directly to individual users",
-      "A system where privileges are granted to roles, and roles are assigned to users",
-      "A way to control warehouse sizes",
-      "A data encryption method"
+      "Grant OWNERSHIP on the schema to the role",
+      "Grant CREATE privileges on the schema and rely on Snowflake's default ownership model",
+      "Create a new database for the role with exclusive access",
+      "Use future grants to automatically grant access to all new objects"
     ],
     correctAnswer: 1,
-    explanation: "RBAC in Snowflake means that privileges are granted to roles rather than directly to users. Roles are then assigned to users. This makes access management scalable and easier to maintain, as you can manage permissions at the role level.",
+    explanation: "By default, the role that creates an object owns it and has full control. Granting CREATE privileges allows the role to create objects, and without additional grants, other roles cannot access those objects. This implements object-level isolation within a shared schema.",
+    category: "Security"
+  },
+  {
+    id: 12,
+    question: "Which statement about Row Access Policies in Snowflake is correct?",
+    options: [
+      "They are evaluated at query compile time and can be bypassed with ACCOUNTADMIN role",
+      "They filter rows dynamically at query runtime based on the executing user's context",
+      "They must be defined at the database level and apply to all tables",
+      "They require Enterprise edition and cannot reference other tables"
+    ],
+    correctAnswer: 1,
+    explanation: "Row Access Policies are evaluated at runtime, dynamically filtering rows based on attributes like the current user, role, or values from a mapping table. They cannot be bypassed even by ACCOUNTADMIN, providing true row-level security.",
+    category: "Security"
+  },
+  {
+    id: 13,
+    question: "A data engineer needs to grant a role the ability to run SELECT queries on all current and future tables in a schema. What is the most efficient approach?",
+    options: [
+      "Grant SELECT on each table individually as they are created",
+      "Use GRANT SELECT ON ALL TABLES IN SCHEMA and GRANT SELECT ON FUTURE TABLES IN SCHEMA",
+      "Grant OWNERSHIP on the schema to the role",
+      "Create a secure view that unions all tables"
+    ],
+    correctAnswer: 1,
+    explanation: "Using both 'GRANT SELECT ON ALL TABLES IN SCHEMA' (for existing tables) and 'GRANT SELECT ON FUTURE TABLES IN SCHEMA' (for tables created later) efficiently manages access without requiring individual grants for each table.",
+    category: "Security"
+  },
+  {
+    id: 14,
+    question: "What happens when a parent role is granted to a child role in Snowflake's role hierarchy?",
+    options: [
+      "The child role inherits all privileges from the parent role",
+      "The parent role inherits all privileges from the child role",
+      "Both roles share privileges bidirectionally",
+      "No inheritance occurs; roles must be granted privileges independently"
+    ],
+    correctAnswer: 1,
+    explanation: "When ROLE_A is granted to ROLE_B, ROLE_B becomes the parent and inherits all privileges that ROLE_A has. The hierarchy flows upward—a role inherits privileges from all roles granted to it, not the other way around.",
+    category: "Security"
+  },
+  {
+    id: 15,
+    question: "Which authentication method provides the STRONGEST security for service accounts running automated ETL processes?",
+    options: [
+      "Username and password with multi-factor authentication",
+      "Key pair authentication with encrypted private key",
+      "Single Sign-On (SSO) with SAML 2.0",
+      "OAuth with refresh tokens"
+    ],
+    correctAnswer: 1,
+    explanation: "Key pair authentication uses RSA key pairs and is recommended for service accounts and automated processes. The private key can be encrypted with a passphrase, and there's no password to rotate or risk of credential exposure in connection strings.",
+    category: "Security"
+  },
+  {
+    id: 16,
+    question: "A company's security policy requires that all data be encrypted using customer-managed keys. Which Snowflake feature and edition supports this requirement?",
+    options: [
+      "Client-side encryption with any Snowflake edition",
+      "Tri-Secret Secure with Business Critical edition",
+      "Server-side encryption available in Standard edition",
+      "Column-level encryption with Enterprise edition"
+    ],
+    correctAnswer: 1,
+    explanation: "Tri-Secret Secure (customer-managed keys) is available in Business Critical edition. It combines a Snowflake-maintained key with a customer-maintained key to create a composite master key, giving customers control over their encryption keys.",
+    category: "Security"
+  },
+  {
+    id: 17,
+    question: "What is the purpose of a Network Policy in Snowflake?",
+    options: [
+      "To control which virtual warehouses can access specific databases",
+      "To restrict access to Snowflake based on IP address ranges",
+      "To encrypt data in transit between regions",
+      "To define bandwidth limits for data loading"
+    ],
+    correctAnswer: 1,
+    explanation: "Network Policies control access to Snowflake by specifying allowed and blocked IP address ranges. They can be applied at the account level or to specific users, ensuring connections only come from trusted network locations.",
+    category: "Security"
+  },
+  {
+    id: 18,
+    question: "Which masking policy configuration allows showing full data to ANALYST_ROLE while showing masked data to all other roles?",
+    options: [
+      "CASE WHEN CURRENT_ROLE() = 'ANALYST_ROLE' THEN val ELSE '***' END",
+      "CASE WHEN IS_ROLE_IN_SESSION('ANALYST_ROLE') THEN val ELSE '***' END",
+      "Both A and B would work correctly",
+      "Masking policies cannot differentiate between roles"
+    ],
+    correctAnswer: 1,
+    explanation: "IS_ROLE_IN_SESSION() checks if a role is active in the current session, accounting for role hierarchy. CURRENT_ROLE() only returns the primary active role. IS_ROLE_IN_SESSION() is preferred as it properly handles inherited roles.",
+    category: "Security"
+  },
+  {
+    id: 19,
+    question: "A Snowflake administrator needs to audit all login attempts to the account. Which feature should they use?",
+    options: [
+      "Query History view in ACCOUNT_USAGE schema",
+      "LOGIN_HISTORY view in ACCOUNT_USAGE schema",
+      "ACCESS_HISTORY view in ACCOUNT_USAGE schema",
+      "SESSIONS view in INFORMATION_SCHEMA"
+    ],
+    correctAnswer: 1,
+    explanation: "LOGIN_HISTORY in ACCOUNT_USAGE schema records all login attempts including successful and failed attempts, authentication method used, client information, and error messages for failures. It provides comprehensive login auditing.",
     category: "Security"
   },
   {
     id: 20,
-    question: "Which system-defined role has the most privileges in a Snowflake account?",
+    question: "What is the impact of running REVOKE ROLE role_a FROM ROLE role_b when other roles depend on this hierarchy for access?",
     options: [
-      "SYSADMIN",
-      "SECURITYADMIN",
-      "ACCOUNTADMIN",
-      "PUBLIC"
+      "Only role_b loses access; roles above role_b retain their privileges",
+      "All roles in the hierarchy lose access to role_a's privileges",
+      "role_b and all parent roles of role_b lose inherited privileges from role_a",
+      "The command fails if there are dependent roles"
     ],
     correctAnswer: 2,
-    explanation: "ACCOUNTADMIN is the most powerful role in Snowflake with privileges to perform all operations in the account, including managing billing, creating users and roles, and accessing all objects. It should be used carefully and assigned to a limited number of trusted users.",
-    category: "Security"
-  },
-  {
-    id: 21,
-    question: "What is the PUBLIC role in Snowflake?",
-    options: [
-      "A role that grants admin access to everyone",
-      "A role automatically granted to every user and can own objects accessible to all users",
-      "A role only for external users",
-      "A temporary guest role"
-    ],
-    correctAnswer: 1,
-    explanation: "The PUBLIC role is automatically granted to every user in Snowflake. Any privileges granted to PUBLIC are available to all users. The PUBLIC schema in each database is owned by the PUBLIC role, making it accessible to all users by default.",
-    category: "Security"
-  },
-  {
-    id: 22,
-    question: "What is the purpose of role hierarchy in Snowflake?",
-    options: [
-      "To organize warehouses by size",
-      "To enable roles to inherit privileges from other roles",
-      "To schedule query execution",
-      "To backup databases"
-    ],
-    correctAnswer: 1,
-    explanation: "Role hierarchy in Snowflake allows roles to inherit privileges from other roles. When Role A is granted to Role B, Role B inherits all privileges that Role A has. This creates a hierarchy that simplifies privilege management across complex organizations.",
-    category: "Security"
-  },
-  {
-    id: 23,
-    question: "How do you transfer ownership of a database object to another role?",
-    options: [
-      "Delete and recreate the object",
-      "Use the GRANT OWNERSHIP command",
-      "Ownership cannot be transferred",
-      "Contact Snowflake support"
-    ],
-    correctAnswer: 1,
-    explanation: "The GRANT OWNERSHIP command transfers ownership of a database object from one role to another. Syntax: GRANT OWNERSHIP ON DATABASE database_name TO ROLE role_name. This is important for managing object lifecycle and access control.",
-    category: "Security"
-  },
-  {
-    id: 24,
-    question: "What SQL command is used to set your current role in a session?",
-    options: [
-      "SET ROLE role_name;",
-      "USE ROLE role_name;",
-      "SWITCH ROLE role_name;",
-      "CHANGE ROLE role_name;"
-    ],
-    correctAnswer: 1,
-    explanation: "USE ROLE role_name; sets your current role for the session. All subsequent operations will be performed with the privileges granted to that role. You can switch roles at any time during a session if you have been granted multiple roles.",
-    category: "Security"
-  },
-  {
-    id: 25,
-    question: "What is the difference between USAGE and SELECT privileges on a database?",
-    options: [
-      "They are the same privilege",
-      "USAGE allows seeing the database exists; SELECT allows querying tables within it",
-      "USAGE is for warehouses only",
-      "SELECT grants admin rights"
-    ],
-    correctAnswer: 1,
-    explanation: "USAGE privilege on a database or schema allows you to see that it exists and navigate into it. SELECT privilege on tables allows you to query data. You need both USAGE on the container (database/schema) and SELECT on tables to query data.",
-    category: "Security"
-  },
-  {
-    id: 26,
-    question: "Which SQL command allows you to view all databases you have access to?",
-    options: [
-      "LIST DATABASES;",
-      "SHOW DATABASES;",
-      "GET DATABASES;",
-      "DESCRIBE DATABASES;"
-    ],
-    correctAnswer: 1,
-    explanation: "SHOW DATABASES; displays all databases in the account that you have privilege to see. Similarly, SHOW SCHEMAS;, SHOW TABLES;, and other SHOW commands help you explore objects you have access to in Snowflake.",
+    explanation: "When role_a is revoked from role_b, role_b loses all inherited privileges from role_a. Additionally, any parent roles of role_b that were accessing role_a's privileges through role_b will also lose that access path.",
     category: "Security"
   },
 
-  // Domain 3: Data Loading and Virtual Warehouses (40% - Questions 27-46)
+  // Domain 3: Performance Concepts (15%)
   {
-    id: 27,
-    question: "What is a Stage in Snowflake?",
+    id: 21,
+    question: "A query on a 10TB table with a WHERE clause filtering on a DATE column is scanning 100% of the table. What is the MOST likely cause and solution?",
     options: [
-      "A location where data files are stored before loading into tables",
-      "A type of virtual warehouse",
-      "A backup system",
-      "A query optimization feature"
+      "The table lacks a clustering key; add clustering on the DATE column",
+      "The warehouse is too small; increase warehouse size",
+      "The result cache is disabled; enable result caching",
+      "The DATE column should be converted to TIMESTAMP"
     ],
     correctAnswer: 0,
-    explanation: "A Stage is a location where data files are stored before loading them into Snowflake tables. Stages can be internal (managed by Snowflake) or external (referencing cloud storage like S3, Azure Blob, or GCS).",
-    category: "Data Loading"
+    explanation: "When queries consistently scan most of the table despite selective filters, it indicates poor clustering. Adding a clustering key on the commonly filtered DATE column will reorganize data, enabling effective partition pruning and significantly reducing scan size.",
+    category: "Performance"
+  },
+  {
+    id: 22,
+    question: "Which warehouse configuration is BEST suited for handling variable workloads with unpredictable query volumes and sizes?",
+    options: [
+      "Single-cluster warehouse with maximum cluster count of 1",
+      "Multi-cluster warehouse with auto-scaling enabled and economy scaling policy",
+      "Multi-cluster warehouse with auto-scaling enabled and standard scaling policy",
+      "Single large warehouse with auto-suspend disabled"
+    ],
+    correctAnswer: 2,
+    explanation: "Multi-cluster warehouse with standard scaling policy immediately spins up additional clusters when queries queue, providing the best responsiveness for variable workloads. Economy policy waits longer before scaling, which may cause delays during spikes.",
+    category: "Performance"
+  },
+  {
+    id: 23,
+    question: "What is the primary benefit of using the Query Acceleration Service (QAS)?",
+    options: [
+      "It caches query results for faster subsequent executions",
+      "It offloads portions of eligible queries to shared compute resources to reduce execution time",
+      "It automatically optimizes query plans based on historical patterns",
+      "It precomputes aggregations during off-peak hours"
+    ],
+    correctAnswer: 1,
+    explanation: "Query Acceleration Service dynamically allocates additional shared compute resources to accelerate portions of eligible queries, particularly those with large scans or selective filters. It complements warehouse compute without requiring larger warehouse sizes.",
+    category: "Performance"
+  },
+  {
+    id: 24,
+    question: "A dashboard with 50 concurrent users runs the same query with different filter values. Which Snowflake feature would BEST improve performance for this scenario?",
+    options: [
+      "Create 50 separate warehouses for each user",
+      "Use a multi-cluster warehouse with auto-scaling",
+      "Enable query result reuse with similar query matching",
+      "Pre-compute all possible filter combinations in materialized views"
+    ],
+    correctAnswer: 1,
+    explanation: "Multi-cluster warehouses scale out to handle concurrent queries by automatically starting additional clusters. This provides the necessary compute capacity for 50 users running similar queries simultaneously without resource contention.",
+    category: "Performance"
+  },
+  {
+    id: 25,
+    question: "Which statement about Snowflake's Automatic Clustering is TRUE?",
+    options: [
+      "It must be manually triggered using ALTER TABLE RECLUSTER",
+      "It runs continuously in the background and consumes serverless compute credits",
+      "It only runs during periods of low warehouse utilization",
+      "It requires a dedicated warehouse to be specified"
+    ],
+    correctAnswer: 1,
+    explanation: "Automatic Clustering is a serverless feature that continuously monitors and reclusters table micro-partitions as needed. It runs independently of virtual warehouses and charges are based on serverless compute credits consumed.",
+    category: "Performance"
+  },
+  {
+    id: 26,
+    question: "A query joining a 500GB fact table with a 50MB dimension table is performing poorly. Which optimization technique is Snowflake MOST likely to apply automatically?",
+    options: [
+      "Hash join with the fact table as the build side",
+      "Broadcast join by replicating the dimension table to all nodes",
+      "Sort-merge join after sorting both tables",
+      "Nested loop join iterating through the fact table"
+    ],
+    correctAnswer: 1,
+    explanation: "Snowflake's optimizer automatically chooses broadcast joins for small tables (typically < 100MB). The small dimension table is replicated to all warehouse nodes, eliminating expensive data shuffling of the large fact table.",
+    category: "Performance"
+  },
+  {
+    id: 27,
+    question: "What is the impact of setting WAREHOUSE_SIZE = 'XLARGE' compared to 'LARGE' on query execution?",
+    options: [
+      "Doubles the number of servers, potentially halving execution time for large queries",
+      "Doubles the memory only, with no impact on CPU",
+      "Reduces credit consumption while maintaining performance",
+      "Only affects the maximum number of concurrent queries"
+    ],
+    correctAnswer: 0,
+    explanation: "Each warehouse size increase doubles the compute resources (servers/nodes). An X-Large has twice the compute of Large. This can significantly improve performance for large, complex queries but also doubles the credit consumption per hour.",
+    category: "Performance"
   },
   {
     id: 28,
-    question: "Which command is used to load data from a stage into a Snowflake table?",
+    question: "Which scenario would benefit MOST from a Search Optimization Service?",
     options: [
-      "LOAD DATA",
-      "COPY INTO",
-      "INSERT INTO",
-      "IMPORT TABLE"
+      "Analytical queries aggregating millions of rows",
+      "Point lookup queries searching for specific values in high-cardinality columns",
+      "Queries joining multiple large tables",
+      "Time-series queries with date range filters"
     ],
     correctAnswer: 1,
-    explanation: "COPY INTO is the primary command for loading data from staged files into Snowflake tables. It supports various file formats (CSV, JSON, Parquet, etc.) and provides options for error handling, data transformation, and validation.",
-    category: "Data Loading"
+    explanation: "Search Optimization Service is designed for point lookup queries on high-cardinality columns (like IDs, emails). It maintains a search access path that enables sub-second lookups in tables with billions of rows.",
+    category: "Performance"
   },
   {
     id: 29,
-    question: "What type of data is stored in a VARIANT column?",
+    question: "A query shows high 'Remote Disk IO' in the query profile. What does this indicate and how can it be addressed?",
     options: [
-      "Only JSON data",
-      "Semi-structured data including JSON, XML, Avro, Parquet",
-      "Only numeric data",
-      "Encrypted data only"
+      "The query is CPU-bound; increase warehouse size",
+      "Data is being read from cloud storage; improve clustering or use a larger warehouse with more cache",
+      "Network latency is high; use a warehouse closer to the data region",
+      "The result set is too large; add LIMIT clause"
     ],
     correctAnswer: 1,
-    explanation: "The VARIANT data type stores semi-structured data and can hold any type of data including objects and arrays. It's commonly used for JSON, XML, Avro, Parquet, and other semi-structured formats, allowing flexible querying without defining a fixed schema.",
-    category: "Data Types"
+    explanation: "High Remote Disk IO indicates data is being read from cloud storage rather than the warehouse's local SSD cache. Improving table clustering reduces data scanned, while larger warehouses have more cache capacity to store frequently accessed data.",
+    category: "Performance"
   },
   {
     id: 30,
-    question: "How do you query a specific attribute from JSON data stored in a VARIANT column?",
+    question: "What is the difference between CLUSTER BY and ORDER BY in Snowflake?",
     options: [
-      "Use standard dot notation: column_name.attribute",
-      "JSON data cannot be queried",
-      "Convert to VARCHAR first",
-      "Use XML functions"
+      "CLUSTER BY defines physical data organization for partition pruning; ORDER BY sorts query results",
+      "They are interchangeable and produce the same results",
+      "ORDER BY is for tables; CLUSTER BY is for views",
+      "CLUSTER BY affects query results; ORDER BY affects storage"
     ],
     correctAnswer: 0,
-    explanation: "Snowflake supports dot notation and bracket notation to query JSON data in VARIANT columns. For example: SELECT json_column:attribute, json_column['key'], or json_column:nested.attribute to access nested values. This makes working with semi-structured data intuitive.",
+    explanation: "CLUSTER BY defines how data is physically organized in micro-partitions to optimize partition pruning for common query patterns. ORDER BY sorts the result set of a query. They serve completely different purposes.",
+    category: "Performance"
+  },
+
+  // Domain 4: Data Loading and Unloading (10%)
+  {
+    id: 31,
+    question: "A data pipeline loads 10GB of CSV files every hour. The files sometimes contain duplicate records that should be ignored. Which COPY INTO option handles this requirement?",
+    options: [
+      "ON_ERROR = 'SKIP_FILE'",
+      "VALIDATION_MODE = 'RETURN_ERRORS'",
+      "MATCH_BY_COLUMN_NAME = 'CASE_INSENSITIVE'",
+      "This cannot be handled by COPY INTO; use MERGE instead"
+    ],
+    correctAnswer: 3,
+    explanation: "COPY INTO does not deduplicate data—it loads what's in the files. To handle duplicates, use a staging table with COPY INTO, then use MERGE to insert only non-duplicate records into the target table based on a unique key.",
     category: "Data Loading"
   },
   {
-    id: 31,
-    question: "What is the difference between a standard warehouse and a multi-cluster warehouse?",
-    options: [
-      "No difference, just different names",
-      "Standard has one cluster; multi-cluster can automatically add/remove clusters for concurrent queries",
-      "Multi-cluster is always faster",
-      "Standard is for reads, multi-cluster for writes"
-    ],
-    correctAnswer: 1,
-    explanation: "A standard warehouse has a single cluster of compute resources. A multi-cluster warehouse can automatically add or remove clusters based on the number of concurrent queries, ensuring consistent performance during peak loads. Multi-cluster is available in Enterprise Edition and higher.",
-    category: "Resource Management"
-  },
-  {
     id: 32,
-    question: "What does 'scaling up' a warehouse mean?",
+    question: "Which statement about Snowpipe is correct?",
     options: [
-      "Adding more clusters",
-      "Increasing the warehouse size (e.g., Small to Medium)",
-      "Adding more users",
-      "Increasing storage capacity"
+      "Snowpipe requires a dedicated virtual warehouse to be running",
+      "Snowpipe uses serverless compute and loads data within minutes of file arrival",
+      "Snowpipe can only load data from internal stages",
+      "Snowpipe batches files for 24 hours before loading"
     ],
     correctAnswer: 1,
-    explanation: "Scaling up means increasing the warehouse size (X-Small → Small → Medium → Large, etc.), which provides more compute resources per cluster. Scaling out means adding more clusters. Scaling up helps with query speed, while scaling out helps with concurrency.",
-    category: "Resource Management"
+    explanation: "Snowpipe is a serverless, continuous data ingestion service. It uses Snowflake-managed compute resources (not customer warehouses) and typically loads data within minutes of files arriving in the stage. It can load from both internal and external stages.",
+    category: "Data Loading"
   },
   {
     id: 33,
-    question: "What does 'scaling out' a multi-cluster warehouse mean?",
+    question: "What is the recommended approach for loading a single 50GB compressed Parquet file into Snowflake for optimal performance?",
     options: [
-      "Making the warehouse size larger",
-      "Adding more compute clusters to handle more concurrent users",
-      "Increasing storage",
-      "Reducing costs"
+      "Load it directly using COPY INTO; Snowflake handles large files efficiently",
+      "Split into multiple smaller files (100-250MB) to enable parallel loading",
+      "Convert to CSV format first for better compatibility",
+      "Use Snowpipe for automatic chunking"
     ],
     correctAnswer: 1,
-    explanation: "Scaling out means adding more clusters to a multi-cluster warehouse to handle increased concurrency (more simultaneous queries). This is automatic based on query load and the MAX_CLUSTER_COUNT setting. It improves performance for many concurrent users.",
-    category: "Resource Management"
+    explanation: "While Snowflake can load large files, splitting them into 100-250MB compressed files enables parallel loading across multiple threads, significantly improving load performance. This is especially important for large datasets.",
+    category: "Data Loading"
   },
   {
     id: 34,
-    question: "Which command lists the files in a stage?",
+    question: "A COPY INTO command completed successfully but loaded 0 rows. What is the MOST likely cause?",
     options: [
-      "SHOW FILES",
-      "LIST @stage_name",
-      "GET @stage_name",
-      "VIEW STAGE"
+      "The warehouse was too small to process the file",
+      "The files were already loaded and Snowflake's load metadata prevented re-loading",
+      "The file format specification was incorrect",
+      "The user lacked INSERT privileges on the table"
     ],
     correctAnswer: 1,
-    explanation: "The LIST @stage_name command displays all files in a specified stage, including file names, sizes, and last modified timestamps. This is useful for verifying files are staged correctly before loading data.",
+    explanation: "Snowflake maintains load metadata for 64 days. If the same files were previously loaded successfully, COPY INTO skips them to prevent duplicates. Use FORCE = TRUE to reload, or PURGE old files and load fresh ones.",
     category: "Data Loading"
   },
   {
     id: 35,
-    question: "What is the purpose of file format objects in Snowflake?",
+    question: "Which external stage definition correctly references an S3 bucket with a storage integration?",
     options: [
-      "To compress files",
-      "To define how to parse and interpret data files during loading or unloading",
-      "To encrypt files",
-      "To backup files"
+      "CREATE STAGE my_stage URL = 's3://bucket/path' CREDENTIALS = (AWS_KEY_ID = '...' AWS_SECRET_KEY = '...');",
+      "CREATE STAGE my_stage URL = 's3://bucket/path' STORAGE_INTEGRATION = my_s3_integration;",
+      "CREATE STAGE my_stage STORAGE_INTEGRATION = my_s3_integration PATH = 's3://bucket/path';",
+      "CREATE STAGE my_stage LOCATION = 's3://bucket/path' INTEGRATION = my_s3_integration;"
     ],
     correctAnswer: 1,
-    explanation: "File format objects define parsing rules for loading or unloading data, such as field delimiters, date formats, null string values, compression type, and error handling. They can be reused across multiple COPY commands for consistency.",
+    explanation: "Storage integrations are the recommended way to access external cloud storage. The correct syntax uses URL for the S3 path and STORAGE_INTEGRATION to reference the integration object that handles authentication securely.",
     category: "Data Loading"
   },
   {
     id: 36,
-    question: "In Snowsight, how can you load data into a table without writing SQL?",
+    question: "When unloading data using COPY INTO <stage>, what determines the number of output files generated?",
     options: [
-      "You must always use SQL",
-      "Use the Load Data wizard in the UI",
-      "Import from Excel only",
-      "Contact support for data loading"
+      "The MAX_FILE_SIZE parameter and the amount of data being unloaded",
+      "Always creates exactly one file per COPY INTO command",
+      "The number of warehouses nodes, regardless of data size",
+      "The PARALLEL parameter set at the session level"
     ],
-    correctAnswer: 1,
-    explanation: "Snowsight provides a visual Load Data wizard that allows you to upload files, select target tables, configure file formats, and load data through a graphical interface without writing SQL. This makes data loading accessible to non-technical users.",
+    correctAnswer: 0,
+    explanation: "The number of files depends on data size and MAX_FILE_SIZE parameter (default ~16MB). Data is unloaded in parallel, with each thread creating files up to MAX_FILE_SIZE. Larger data sets result in more files for optimal parallel operations.",
     category: "Data Loading"
   },
   {
     id: 37,
-    question: "Which SQL command can you use to insert a single row into a table?",
+    question: "What is the behavior of STRIP_OUTER_ARRAY = TRUE when loading JSON data?",
     options: [
-      "ADD ROW",
-      "INSERT INTO table_name VALUES (...)",
-      "CREATE ROW",
-      "LOAD ROW"
+      "Removes all arrays from the JSON structure",
+      "Loads each element of the outer array as a separate row",
+      "Flattens nested arrays into a single level",
+      "Converts arrays to comma-separated strings"
     ],
     correctAnswer: 1,
-    explanation: "INSERT INTO table_name VALUES (...) is the standard SQL command to insert rows. You can insert single or multiple rows in one statement. For bulk loading from files, COPY INTO is more efficient than multiple INSERT statements.",
+    explanation: "STRIP_OUTER_ARRAY = TRUE is used when your JSON file contains an array of objects at the root level. It strips the outer array brackets and loads each array element as a separate table row, which is common for API responses.",
     category: "Data Loading"
   },
   {
     id: 38,
-    question: "What are directory tables used for in Snowflake?",
+    question: "A company wants to continuously stream real-time events from Kafka into Snowflake. Which approach is recommended?",
     options: [
-      "To store user directories",
-      "To organize and query metadata about files in stages, especially unstructured data",
-      "To list database objects",
-      "To manage user permissions"
+      "Use Snowpipe with REST API calls for each event",
+      "Use the Snowflake Kafka Connector to stream data through Snowpipe",
+      "Create a custom application that runs COPY INTO every second",
+      "Use external tables to query Kafka directly"
     ],
     correctAnswer: 1,
-    explanation: "Directory tables automatically catalog files in external stages, storing metadata like file names, sizes, and URLs. They enable querying metadata about unstructured files and generating pre-signed URLs for accessing file content.",
+    explanation: "The Snowflake Kafka Connector is purpose-built for streaming Kafka data into Snowflake. It uses Snowpipe Streaming for near real-time ingestion with exactly-once semantics and handles offset management automatically.",
     category: "Data Loading"
   },
   {
     id: 39,
-    question: "How do you access unstructured data files (like images or PDFs) stored in Snowflake stages?",
+    question: "Which file format provides the BEST loading performance for structured data with many columns?",
     options: [
-      "Download them manually",
-      "Use pre-signed URLs generated from directory tables",
-      "Unstructured files cannot be accessed",
-      "Convert them to CSV first"
+      "CSV with GZIP compression",
+      "JSON with SNAPPY compression",
+      "Parquet with SNAPPY compression",
+      "AVRO with ZSTD compression"
     ],
-    correctAnswer: 1,
-    explanation: "You can query directory tables to get metadata about unstructured files and generate pre-signed URLs using functions like BUILD_SCOPED_FILE_URL(). These URLs provide temporary, secure access to files stored in stages.",
+    correctAnswer: 2,
+    explanation: "Parquet is columnar, enabling Snowflake to read only required columns. Combined with efficient SNAPPY compression, it provides excellent performance for wide tables. CSV requires reading entire rows, and JSON has parsing overhead.",
     category: "Data Loading"
   },
   {
     id: 40,
-    question: "What does the Snowflake Cortex COMPLETE function do?",
+    question: "What happens when ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE during a COPY INTO operation?",
     options: [
-      "Completes SQL queries automatically",
-      "Provides LLM-powered text completion and generation",
-      "Completes data loading tasks",
-      "Finishes suspended warehouses"
+      "Extra columns in the file cause the entire load to fail",
+      "Missing columns are filled with NULL; extra columns are ignored based on position",
+      "The file columns are automatically mapped by name",
+      "All mismatched rows are written to an error file"
     ],
     correctAnswer: 1,
-    explanation: "COMPLETE is a Snowflake Cortex LLM function that provides AI-powered text completion and generation capabilities. You can use it directly in SQL to generate text, answer questions, or create content based on prompts.",
-    category: "AI/ML"
-  },
-  {
-    id: 41,
-    question: "What is the purpose of the Snowflake Cortex TRANSLATE function?",
-    options: [
-      "To translate SQL to Python",
-      "To translate text between different languages using AI",
-      "To convert data types",
-      "To migrate data between tables"
-    ],
-    correctAnswer: 1,
-    explanation: "The TRANSLATE function in Snowflake Cortex uses AI to translate text between languages. You can specify source and target languages and translate entire columns of text data directly within SQL queries.",
-    category: "AI/ML"
-  },
-  {
-    id: 42,
-    question: "What does the Snowflake Cortex CLASSIFY_TEXT function do?",
-    options: [
-      "Sorts text alphabetically",
-      "Classifies or categorizes text using machine learning",
-      "Counts text length",
-      "Encrypts text"
-    ],
-    correctAnswer: 1,
-    explanation: "CLASSIFY_TEXT uses machine learning to classify or categorize text data. It can perform tasks like sentiment analysis, topic classification, or custom classification based on your specified categories, all within SQL.",
-    category: "AI/ML"
-  },
-  {
-    id: 43,
-    question: "What is the purpose of the Snowflake Cortex PARSE_DOCUMENT function?",
-    options: [
-      "To format SQL code",
-      "To extract text and structure from documents like PDFs using AI",
-      "To parse JSON only",
-      "To validate XML"
-    ],
-    correctAnswer: 1,
-    explanation: "PARSE_DOCUMENT extracts text and structured information from documents like PDFs, images, or other unstructured file types using AI/ML. This makes document data queryable and analyzable within Snowflake.",
-    category: "AI/ML"
-  },
-  {
-    id: 44,
-    question: "When loading CSV files with COPY INTO, what does the SKIP_HEADER option do?",
-    options: [
-      "Skips the entire file",
-      "Skips the specified number of header rows in the file",
-      "Skips error rows",
-      "Skips the file format definition"
-    ],
-    correctAnswer: 1,
-    explanation: "SKIP_HEADER = N tells COPY INTO to skip the first N rows of the file, typically used to skip column header rows in CSV files. For example, SKIP_HEADER = 1 skips the first row containing column names.",
-    category: "Data Loading"
-  },
-  {
-    id: 45,
-    question: "What is warehouse sizing based on?",
-    options: [
-      "Number of users only",
-      "Amount of compute resources (CPU, memory, cache) - ranging from X-Small to 6X-Large",
-      "Storage capacity",
-      "Number of databases"
-    ],
-    correctAnswer: 1,
-    explanation: "Warehouse sizes (X-Small, Small, Medium, Large, X-Large, 2X-Large, 3X-Large, 4X-Large, 5X-Large, 6X-Large) determine the amount of compute resources allocated. Each size up doubles the resources and credit consumption. Choose size based on query complexity and performance needs.",
-    category: "Resource Management"
-  },
-  {
-    id: 46,
-    question: "Which file formats can Snowflake natively load without transformation?",
-    options: [
-      "Only CSV files",
-      "CSV, JSON, Avro, Parquet, ORC, XML",
-      "Only text-based formats",
-      "Only Excel files"
-    ],
-    correctAnswer: 1,
-    explanation: "Snowflake can natively load multiple file formats including delimited text (CSV, TSV), JSON, Avro, Parquet, ORC, and XML. Each format has specific file format options to control parsing and loading behavior.",
+    explanation: "With ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE, COPY INTO is lenient about column count differences. If the file has fewer columns, table columns are filled with NULL. If more columns, extras are ignored. Mapping is positional.",
     category: "Data Loading"
   },
 
-  // Domain 4: Data Protection and Data Sharing (10% - Questions 47-50)
+  // Domain 5: Data Transformations (20%)
   {
-    id: 47,
-    question: "What is Time Travel in Snowflake?",
+    id: 41,
+    question: "Which approach should be used to handle slowly changing dimension Type 2 (SCD-2) in Snowflake?",
     options: [
-      "A feature to schedule queries",
-      "The ability to query, restore, and clone data from a previous point in time",
-      "A performance optimization feature",
-      "A data migration tool"
+      "Use UPDATE statements to modify existing records",
+      "Use MERGE with INSERT for new records and UPDATE to set end dates on existing records",
+      "Use TRUNCATE and reload the entire dimension daily",
+      "Use VARIANT columns to store version history"
     ],
     correctAnswer: 1,
-    explanation: "Time Travel allows you to access historical data (data that has been changed or deleted) at any point within a defined retention period. You can query data as it existed in the past, restore deleted objects, or clone objects from a specific point in time.",
-    category: "Data Protection"
+    explanation: "SCD-2 maintains history by adding new records and updating end dates on existing records. MERGE efficiently handles this by matching on business keys, updating current records to set end dates, and inserting new versions in a single statement.",
+    category: "Data Transformation"
+  },
+  {
+    id: 42,
+    question: "What is the result of SELECT PARSE_JSON('{\"a\": 1, \"b\": [1,2,3]}'):b[1]::INT?",
+    options: [
+      "1",
+      "2",
+      "[1,2,3]",
+      "Error: Invalid array index"
+    ],
+    correctAnswer: 1,
+    explanation: "PARSE_JSON converts the string to a VARIANT. :b accesses the 'b' key (array [1,2,3]). [1] accesses index 1 (second element, which is 2). ::INT casts to integer. Result is 2.",
+    category: "Data Transformation"
+  },
+  {
+    id: 43,
+    question: "A JSON column contains nested arrays that need to be flattened into rows. Which function and mode should be used?",
+    options: [
+      "LATERAL FLATTEN with mode OBJECT",
+      "LATERAL FLATTEN with mode ARRAY",
+      "LATERAL FLATTEN with mode BOTH or leave mode unspecified",
+      "PARSE_JSON with recursive expansion"
+    ],
+    correctAnswer: 2,
+    explanation: "LATERAL FLATTEN with mode BOTH (default) handles both arrays and objects. For nested structures, you may chain multiple FLATTEN calls or use recursive_descent => TRUE to flatten deeply nested arrays in a single operation.",
+    category: "Data Transformation"
+  },
+  {
+    id: 44,
+    question: "What is the key difference between a stored procedure and a user-defined function (UDF) in Snowflake?",
+    options: [
+      "UDFs can modify data; stored procedures cannot",
+      "Stored procedures can execute DDL/DML and contain transaction control; UDFs are query-only and return values",
+      "Stored procedures are faster than UDFs",
+      "UDFs support JavaScript; stored procedures only support SQL"
+    ],
+    correctAnswer: 1,
+    explanation: "Stored procedures can execute any SQL including DDL, DML, and transaction control (BEGIN, COMMIT, ROLLBACK). UDFs are designed to be called within queries, must return a value, and cannot modify data or control transactions.",
+    category: "Data Transformation"
+  },
+  {
+    id: 45,
+    question: "Which window function correctly calculates a running total of sales ordered by date within each region?",
+    options: [
+      "SUM(sales) OVER (PARTITION BY region ORDER BY date)",
+      "SUM(sales) OVER (ORDER BY date PARTITION BY region)",
+      "RUNNING_TOTAL(sales) OVER (PARTITION BY region ORDER BY date)",
+      "SUM(sales) OVER (PARTITION BY region) ORDER BY date"
+    ],
+    correctAnswer: 0,
+    explanation: "SUM with PARTITION BY region ORDER BY date creates a running total within each region, ordered by date. The ORDER BY in the OVER clause creates a default frame of ROWS UNBOUNDED PRECEDING to CURRENT ROW, enabling cumulative calculation.",
+    category: "Data Transformation"
+  },
+  {
+    id: 46,
+    question: "A MERGE statement needs to handle three scenarios: update existing records, insert new records, and delete records no longer in the source. How many WHEN clauses are required?",
+    options: [
+      "Two: WHEN MATCHED and WHEN NOT MATCHED",
+      "Three: WHEN MATCHED THEN UPDATE, WHEN MATCHED THEN DELETE, WHEN NOT MATCHED THEN INSERT",
+      "Three: WHEN MATCHED, WHEN NOT MATCHED BY TARGET, WHEN NOT MATCHED BY SOURCE",
+      "Four separate MERGE statements are required"
+    ],
+    correctAnswer: 2,
+    explanation: "Snowflake MERGE supports WHEN MATCHED (update/delete existing), WHEN NOT MATCHED (insert new), and WHEN NOT MATCHED BY SOURCE (delete records in target not in source). All three scenarios can be handled in one MERGE statement.",
+    category: "Data Transformation"
+  },
+  {
+    id: 47,
+    question: "What is the output of SELECT ARRAY_AGG(DISTINCT col) WITHIN GROUP (ORDER BY col) FROM table?",
+    options: [
+      "A comma-separated string of values",
+      "An array containing unique values sorted in order",
+      "A single aggregated value",
+      "Error: DISTINCT cannot be used with ARRAY_AGG"
+    ],
+    correctAnswer: 1,
+    explanation: "ARRAY_AGG aggregates values into an array. DISTINCT removes duplicates, and WITHIN GROUP (ORDER BY col) sorts the elements. The result is an array of unique values in sorted order.",
+    category: "Data Transformation"
   },
   {
     id: 48,
-    question: "What is Zero-Copy Cloning in Snowflake?",
+    question: "Which statement creates a JavaScript UDF that can be used in SQL queries?",
     options: [
-      "A feature that copies data slowly",
-      "Creating a full copy of data that requires double storage",
-      "Creating a snapshot of a database/schema/table without duplicating underlying data",
-      "A backup method"
+      "CREATE FUNCTION my_func(x INT) RETURNS INT LANGUAGE JAVASCRIPT AS 'return x * 2'",
+      "CREATE FUNCTION my_func(x FLOAT) RETURNS FLOAT LANGUAGE JAVASCRIPT AS $$ return X * 2; $$",
+      "CREATE OR REPLACE FUNCTION my_func(x FLOAT) RETURNS FLOAT LANGUAGE JAVASCRIPT AS 'return X * 2;'",
+      "CREATE FUNCTION my_func(x INT) RETURNS INT AS 'return x * 2' LANGUAGE JAVASCRIPT"
     ],
     correctAnswer: 2,
-    explanation: "Zero-Copy Cloning creates a replica of a database, schema, or table by copying metadata and creating pointers to existing micro-partitions. No data is physically copied, so clones are created instantly and consume no additional storage until changes are made.",
-    category: "Data Protection"
+    explanation: "JavaScript UDFs require: CREATE [OR REPLACE] FUNCTION, parameter with type, RETURNS with type, LANGUAGE JAVASCRIPT, and the JS code in quotes or $$. Note: JS parameter names are uppercase (X not x).",
+    category: "Data Transformation"
   },
   {
     id: 49,
-    question: "What is Snowflake Marketplace?",
+    question: "How do you call a stored procedure that modifies data and access its results?",
     options: [
-      "A place to buy Snowflake licenses",
-      "A platform to discover and access third-party data sets and data services",
-      "A warehouse size selector",
-      "An employee marketplace"
+      "SELECT * FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))",
+      "CALL procedure_name(); then query the modified table directly",
+      "Both A and B are valid approaches depending on procedure implementation",
+      "Stored procedure results cannot be accessed after execution"
     ],
-    correctAnswer: 1,
-    explanation: "Snowflake Marketplace is a platform where you can discover, access, and seamlessly query third-party data sets and data services from data providers. Data is shared using Snowflake's secure data sharing, requiring no data movement or copying.",
-    category: "Data Sharing"
+    correctAnswer: 2,
+    explanation: "Stored procedures can return results via RESULT_SCAN of their CALL statement, or they can modify tables that you query afterward. The approach depends on how the procedure is designed—some return result sets, others modify data.",
+    category: "Data Transformation"
   },
   {
     id: 50,
-    question: "What is Secure Data Sharing in Snowflake?",
+    question: "What is the purpose of QUALIFY in a Snowflake query?",
     options: [
-      "Exporting data via encrypted email",
-      "Sharing live data between Snowflake accounts without copying or transferring data",
-      "A VPN connection",
-      "Copying data to external storage"
+      "To filter rows before window functions are applied",
+      "To filter rows based on the results of window functions",
+      "To qualify table names with schema prefixes",
+      "To validate query syntax before execution"
     ],
     correctAnswer: 1,
-    explanation: "Secure Data Sharing allows you to share selected database objects with other Snowflake accounts instantly and securely. Consumers query shared data in real-time from the provider's storage without any data copying or transfer. The provider pays for storage, consumers pay for compute.",
+    explanation: "QUALIFY filters results based on window function values, similar to how HAVING filters GROUP BY results. For example, 'QUALIFY ROW_NUMBER() OVER (PARTITION BY id ORDER BY date DESC) = 1' keeps only the latest row per id.",
+    category: "Data Transformation"
+  },
+
+  // Domain 6: Data Protection and Data Sharing (15%)
+  {
+    id: 51,
+    question: "A table was accidentally dropped 5 days ago. The account has Enterprise edition with default Time Travel settings. Can the table be recovered?",
+    options: [
+      "No, Time Travel only retains data for 24 hours",
+      "Yes, using UNDROP TABLE within the 90-day Time Travel period",
+      "Yes, using UNDROP TABLE within the 1-day default, but this is likely outside the window",
+      "No, dropped tables cannot be recovered with Time Travel"
+    ],
+    correctAnswer: 1,
+    explanation: "Enterprise edition supports up to 90 days of Time Travel. Dropped tables can be recovered using UNDROP TABLE. The default is 1 day but can be extended up to 90 days with DATA_RETENTION_TIME_IN_DAYS. If set higher, recovery after 5 days is possible.",
+    category: "Data Protection"
+  },
+  {
+    id: 52,
+    question: "What is the difference between a zero-copy clone and a regular table copy in terms of storage?",
+    options: [
+      "Zero-copy clones compress data more efficiently",
+      "Zero-copy clones share underlying micro-partitions and only store modified data",
+      "Both use the same amount of storage",
+      "Regular copies are stored externally; clones are stored internally"
+    ],
+    correctAnswer: 1,
+    explanation: "Zero-copy cloning creates metadata pointers to existing micro-partitions. No data is copied initially—storage is only consumed when data diverges (writes to either source or clone). This makes cloning instant and initially free in storage.",
+    category: "Data Protection"
+  },
+  {
+    id: 53,
+    question: "A consumer account needs real-time access to a provider's data without data movement. Which Snowflake feature enables this?",
+    options: [
+      "Database replication with continuous refresh",
+      "Direct Data Sharing using shares and secure views",
+      "Snowpipe for continuous data ingestion",
+      "External tables pointing to provider's storage"
+    ],
+    correctAnswer: 1,
+    explanation: "Secure Data Sharing allows a provider to grant access to database objects through shares. Consumers access live, read-only data without copying or data movement. Changes in provider data are instantly visible to consumers.",
     category: "Data Sharing"
+  },
+  {
+    id: 54,
+    question: "What is required to share data with a Snowflake account in a different cloud region or provider?",
+    options: [
+      "Both accounts must be on the same cloud provider",
+      "Use database replication to a secondary deployment, then share from there",
+      "Direct sharing across regions is automatically supported",
+      "Create an external stage accessible to both accounts"
+    ],
+    correctAnswer: 1,
+    explanation: "Direct Data Sharing is limited to the same region and cloud provider. For cross-region or cross-cloud sharing, you must first replicate the database to a secondary deployment in the consumer's region, then create a share from that replica.",
+    category: "Data Sharing"
+  },
+  {
+    id: 55,
+    question: "Which object types CAN be included in a Snowflake share?",
+    options: [
+      "Tables, secure views, and secure UDFs",
+      "Tables, views, stages, and warehouses",
+      "Only tables and materialized views",
+      "Databases and all contained objects automatically"
+    ],
+    correctAnswer: 0,
+    explanation: "Shares can include tables, external tables, secure views, and secure UDFs. Non-secure views, stages, file formats, and warehouses cannot be shared. Secure views are important for row/column-level access control on shared data.",
+    category: "Data Sharing"
+  },
+  {
+    id: 56,
+    question: "A company needs to share the last 30 days of sales data with a partner, filtered by the partner's assigned region. What is the recommended approach?",
+    options: [
+      "Create a table copy filtered by region and share that table",
+      "Create a secure view with filters on date and region, then share the view",
+      "Share the entire table and ask the partner to filter their queries",
+      "Use external functions to validate partner access"
+    ],
+    correctAnswer: 1,
+    explanation: "Secure views are ideal for sharing filtered data. The view definition is hidden from consumers, and filters based on date range and partner-specific region ensure consumers see only their authorized data. The share includes the secure view.",
+    category: "Data Sharing"
+  },
+  {
+    id: 57,
+    question: "What is Fail-safe and how does it differ from Time Travel?",
+    options: [
+      "Fail-safe is user-accessible recovery; Time Travel is Snowflake-only recovery",
+      "Time Travel is user-accessible (configurable); Fail-safe is Snowflake-only recovery for 7 days after Time Travel ends",
+      "They are the same feature with different names",
+      "Fail-safe provides longer retention; Time Travel provides faster recovery"
+    ],
+    correctAnswer: 1,
+    explanation: "Time Travel allows user-initiated recovery within a configurable period (1-90 days). Fail-safe provides an additional 7 days of protection AFTER Time Travel expires, but recovery can only be performed by Snowflake support for disaster scenarios.",
+    category: "Data Protection"
+  },
+  {
+    id: 58,
+    question: "Which statement about Snowflake Marketplace is TRUE?",
+    options: [
+      "Data products on Marketplace require data copying to the consumer account",
+      "Only free data products are available on Marketplace",
+      "Marketplace enables providers to monetize live data products that consumers access without copying",
+      "Marketplace is only available in the US region"
+    ],
+    correctAnswer: 2,
+    explanation: "Snowflake Marketplace allows data providers to list free or paid data products. Consumers access live data through secure data sharing without copying. Providers can monetize their data, and Snowflake handles billing and access management.",
+    category: "Data Sharing"
+  },
+  {
+    id: 59,
+    question: "A reader account is being set up for a partner who doesn't have Snowflake. What limitations does a reader account have?",
+    options: [
+      "Reader accounts cannot query data",
+      "Reader accounts have read-only access, cannot create objects, and the provider pays for compute",
+      "Reader accounts have full Snowflake capabilities",
+      "Reader accounts can only access Marketplace data"
+    ],
+    correctAnswer: 1,
+    explanation: "Reader accounts (managed accounts) are created by providers for non-Snowflake consumers. They can only read shared data, cannot create databases or write data, and compute costs are charged to the provider who created the account.",
+    category: "Data Sharing"
+  },
+  {
+    id: 60,
+    question: "Which statement correctly describes database replication in Snowflake?",
+    options: [
+      "Replication copies data synchronously in real-time",
+      "Replication creates a read-only copy that can be refreshed and promoted to read-write if needed",
+      "Replicated databases cannot be used for disaster recovery",
+      "Replication requires matching warehouse sizes in both regions"
+    ],
+    correctAnswer: 1,
+    explanation: "Database replication creates a replica that is refreshed asynchronously. Replicas are initially read-only but can be promoted to read-write for disaster recovery (with Business Critical edition). Refresh frequency is configurable.",
+    category: "Data Protection"
   }
 ];
